@@ -5,6 +5,11 @@ using Photon.Realtime;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
+    void Awake()
+    {
+        PhotonNetwork.SendRate = 30;
+        PhotonNetwork.SerializationRate = 20;
+    }
 
     public GameObject PlayerPrefab;
     void Start()

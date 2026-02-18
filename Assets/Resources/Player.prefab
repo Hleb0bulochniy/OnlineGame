@@ -150,8 +150,8 @@ GameObject:
   - component: {fileID: 100550599468377006}
   - component: {fileID: 5658006270679872709}
   - component: {fileID: 7264873249259438621}
-  - component: {fileID: 6056473030318347321}
   - component: {fileID: 5810947037159747192}
+  - component: {fileID: 1564333351883555330}
   - component: {fileID: 1923865811788804419}
   - component: {fileID: 1831496187396659804}
   m_Layer: 0
@@ -274,34 +274,7 @@ MonoBehaviour:
   groundedStick: -2
   mouseSensitivity: 2
   maxPitch: 80
-  lockCursor: 1
---- !u!54 &6056473030318347321
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4337361357204967103}
-  serializedVersion: 5
-  m_Mass: 64.54
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 1
+  lockCursor: 0
 --- !u!143 &5810947037159747192
 CharacterController:
   m_ObjectHideFlags: 0
@@ -327,6 +300,21 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1564333351883555330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4337361357204967103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d37e5b5e974682648830d772aa5018af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionLerp: 12
+  rotationLerp: 12
+  snapDistance: 3
 --- !u!114 &1923865811788804419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -346,6 +334,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
+  - {fileID: 1564333351883555330}
   - {fileID: 1831496187396659804}
   sceneViewId: 0
   InstantiationId: 0

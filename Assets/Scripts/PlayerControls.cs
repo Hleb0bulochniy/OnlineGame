@@ -50,6 +50,8 @@ public class PlayerControllerPun : MonoBehaviourPun
         }
         else
         {
+            var cc = GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
             EnableLocalStuff(false);
         }
     }
