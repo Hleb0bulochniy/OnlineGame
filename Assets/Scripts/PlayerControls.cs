@@ -1,7 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
 public class PlayerControllerPun : MonoBehaviourPun
 {
     [Header("References")]
@@ -11,13 +10,7 @@ public class PlayerControllerPun : MonoBehaviourPun
 
     [Header("Move")]
     public float walkSpeed = 5f;
-    public float sprintSpeed = 8f;
     public float acceleration = 12f;
-
-    [Header("Jump & Gravity")]
-    public float jumpHeight = 1.2f;
-    public float gravity = -25f;
-    public float groundedStick = -2f;
 
     [Header("Look")]
     public float mouseSensitivity = 2f;
@@ -26,14 +19,18 @@ public class PlayerControllerPun : MonoBehaviourPun
     [Header("Misc")]
     public bool lockCursor = true;
 
-    private CharacterController cc;
-    private Vector3 moveVelocity;
-    private float verticalVelocity;
+    private Rigidbody rb;
     private float pitch;
+    private Vector3 wishDir;
 
     void Awake()
     {
-        cc = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        // ����� �� �����������
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
     }
 
     void Start()
@@ -50,8 +47,7 @@ public class PlayerControllerPun : MonoBehaviourPun
         }
         else
         {
-            var cc = GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            // ��� ����� ������� ��������� ������ � ����
             EnableLocalStuff(false);
         }
     }
@@ -61,7 +57,22 @@ public class PlayerControllerPun : MonoBehaviourPun
         if (!photonView.IsMine) return;
 
         Look();
-        Move();
+        ReadInput();
+    }
+
+    void FixedUpdate()
+    {
+        if (!photonView.IsMine) return;
+
+        MovePhysics();
+    }
+
+    private void OnEnable() => GetComponent<PlayerMass>().OnMassChangeAction += ChangeSpeed;
+    private void OnDisable()
+    {
+        var pm = GetComponent<PlayerMass>();
+        if (pm != null)
+            pm.OnMassChangeAction -= ChangeSpeed;
     }
 
     private void EnableLocalStuff(bool enable)
@@ -90,33 +101,33 @@ public class PlayerControllerPun : MonoBehaviourPun
             cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
-    private void Move()
+    private void ReadInput()
     {
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
+
         Vector3 input = new Vector3(x, 0f, z);
         input = Vector3.ClampMagnitude(input, 1f);
 
-        bool sprint = Input.GetKey(KeyCode.LeftShift);
-        float targetSpeed = sprint ? sprintSpeed : walkSpeed;
+        wishDir = (transform.right * input.x + transform.forward * input.z).normalized;
+    }
 
-        Vector3 targetVel = (transform.right * input.x + transform.forward * input.z) * targetSpeed;
+    private void MovePhysics()
+    {
+        Vector3 currentVel = rb.linearVelocity;
+        Vector3 targetVel = wishDir * walkSpeed;
 
-        moveVelocity = Vector3.MoveTowards(moveVelocity, targetVel, acceleration * Time.deltaTime);
 
-        bool grounded = cc.isGrounded;
-        if (grounded && verticalVelocity < 0f)
-            verticalVelocity = groundedStick;
+        float control = 1f;
 
-        if (grounded && Input.GetButtonDown("Jump"))
-        {
-            // v = sqrt(h * -2g)
-            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
+        Vector3 velChange = targetVel - new Vector3(currentVel.x, 0f, currentVel.z);
+        velChange = Vector3.ClampMagnitude(velChange, acceleration * control);
 
-        verticalVelocity += gravity * Time.deltaTime;
+        rb.AddForce(new Vector3(velChange.x, 0f, velChange.z), ForceMode.VelocityChange);
+    }
 
-        Vector3 motion = new Vector3(moveVelocity.x, verticalVelocity, moveVelocity.z);
-        cc.Move(motion * Time.deltaTime);
+    private void ChangeSpeed()
+    {
+        walkSpeed = 7f + (transform.localScale.x * walkSpeed) / 10f;
     }
 }

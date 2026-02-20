@@ -18,11 +18,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         SpawnPlayer();
     }
 
-    void Update()
-    {
-        
-    }
-
     public void Leave()
     {
         PhotonNetwork.LeaveRoom();
