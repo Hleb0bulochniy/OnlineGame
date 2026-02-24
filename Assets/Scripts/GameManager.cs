@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (!PhotonNetwork.InRoom) return;
 
         PhotonNetwork.Instantiate(PlayerPrefab.name,
-            new Vector3(Random.Range(-5f, 5f), 1f, Random.Range(-5f, 5f)),
+            new Vector3(Random.Range(-50f, 50f), 1f, Random.Range(-50f, 50f)),
             Quaternion.identity);
     }
 }
