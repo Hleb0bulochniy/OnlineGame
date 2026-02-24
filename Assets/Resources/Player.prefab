@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 7184101633541045531}
   - component: {fileID: 6790160505376805582}
   - component: {fileID: 100550599468377006}
+  - component: {fileID: 2045692426049033896}
   - component: {fileID: 7264873249259438621}
   - component: {fileID: 1564333351883555330}
   - component: {fileID: 1923865811788804419}
@@ -233,6 +234,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2045692426049033896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4337361357204967103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 345b7a2ed45bb6b4aa22a0d876f7b54c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &7264873249259438621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,6 +302,7 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 1564333351883555330}
   - {fileID: 1831496187396659804}
+  - {fileID: 3334504637459382970}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -369,7 +383,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mass: 10
-  _massLossSpeed: 50
+  _massLossSpeed: 500
 --- !u!135 &5047629163665279993
 SphereCollider:
   m_ObjectHideFlags: 0

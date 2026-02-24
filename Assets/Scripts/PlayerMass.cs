@@ -1,12 +1,13 @@
+using Photon.Pun;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerMass : MonoBehaviour
+public class PlayerMass : MonoBehaviourPun, IPunObservable
 {
     [Header("Parameters")]
     [SerializeField] private float _mass = 10f;
-    [SerializeField] private float _massLossSpeed = 50f;
+    [SerializeField] private float _massLossSpeed = 500f;
 
     [Header("Coroutine")]
     [SerializeField] private Coroutine _massLossCoroutine;
@@ -14,63 +15,122 @@ public class PlayerMass : MonoBehaviour
     [Header("Action")]
     [SerializeField] public UnityAction OnMassChangeAction;
 
-    private bool _isDeadOrLeaving;
+    private bool _dead;
+    public float Mass => _mass;
 
     void Start()
     {
+        ResizeLocal();
         _massLossCoroutine = StartCoroutine(MassLossCoroutine());
     }
 
     private void OnTriggerEnter(Collider collision)
     {
-        if (_isDeadOrLeaving) return;
+        if (_dead) return;
 
-        var triggerPlayer = collision.gameObject;
+        var trigger = collision.gameObject;
 
-        if (triggerPlayer.CompareTag("Food"))
+        if (trigger.CompareTag("Food"))
         {
             _mass++;
-            triggerPlayer.GetComponent<Food>().OnEatFoodAction?.Invoke();
-            Resize();
+            trigger.GetComponent<Food>().OnEatFoodAction?.Invoke();
+            ResizeLocal();
             return;
         }
 
-        if (!triggerPlayer.CompareTag("Player")) return;
+        if (!PhotonNetwork.IsMasterClient) return;
 
-        var triggerPlayerMass = triggerPlayer.GetComponent<PlayerMass>();
-        if (triggerPlayerMass == null || triggerPlayerMass._isDeadOrLeaving) return;
+        if (!trigger.CompareTag("Player")) return;
 
-        //if (_mass > triggerPlayerMass._mass)
-        //{
-        //    _mass += triggerPlayerMass._mass;
-        //    triggerPlayerMass.LeaveGame();
-        //    Resize();
-        //}
+        var triggerPlayerMass = trigger.GetComponent<PlayerMass>();
+        if (triggerPlayerMass == null || triggerPlayerMass._dead) return;
 
-        if (triggerPlayerMass._mass * 1.1 < _mass)
+        if (photonView.ViewID > triggerPlayerMass.photonView.ViewID) return;
+
+        ResolveEat(this, triggerPlayerMass);
+    }
+
+    private void ResolveEat(PlayerMass a, PlayerMass b)
+    {
+        if (a._mass >= b._mass * 1.1f)
         {
-            _mass += triggerPlayerMass._mass;
-            Resize();
+            // a ест b
+            photonView.RPC(nameof(RPC_Eat), RpcTarget.All, a.photonView.ViewID, b.photonView.ViewID);
+        }
+        else if (b._mass >= a._mass * 1.1f)
+        {
+            // b ест a
+            photonView.RPC(nameof(RPC_Eat), RpcTarget.All, b.photonView.ViewID, a.photonView.ViewID);
         }
     }
 
-    private void LeaveGame()
+    [PunRPC]
+    private void RPC_Eat(int winnerViewId, int loserViewId)
     {
-        if (_isDeadOrLeaving) return;
-        _isDeadOrLeaving = true;
+        var winnerView = PhotonView.Find(winnerViewId);
+        var loserView = PhotonView.Find(loserViewId);
 
+        if (winnerView == null || loserView == null) return;
+
+        var winner = winnerView.GetComponent<PlayerMass>();
+        var loser = loserView.GetComponent<PlayerMass>();
+
+        if (winner == null || loser == null) return;
+        if (winner._dead || loser._dead) return;
+
+        winner._mass += loser._mass;
+        winner.ResizeLocal();
+
+        loser._dead = true;
+        loser.DisableLocal();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            photonView.RPC(nameof(RPC_ForceLeave), loser.photonView.Owner);
+        }
+
+        //if (PhotonNetwork.IsMasterClient)
+        //{
+        //    PhotonNetwork.Destroy(loser.photonView);
+        //}
+    }
+
+    private void DisableLocal()
+    {
         var col = GetComponent<Collider>();
         if (col) col.enabled = false;
 
-        var gameManager = GameObject.Find("GameManager")?.GetComponent<GameManager>();
-        gameManager?.Leave();
+        
+
+        if (photonView.IsMine)
+        {
+            FindFirstObjectByType<GameManager>()?.Leave();
+        }
     }
 
-    private void Resize()
+    [PunRPC] void RPC_ForceLeave() { PhotonNetwork.LeaveRoom(); }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        OnMassChangeAction.Invoke();
-        float newSize = _mass / 10;
-        gameObject.transform.localScale = new Vector3 (newSize, newSize, newSize);
+        if (stream.IsWriting)
+        {
+            stream.SendNext(_mass);
+            stream.SendNext(_dead);
+        }
+        else
+        {
+            _mass = (float)stream.ReceiveNext();
+            _dead = (bool)stream.ReceiveNext();
+            ResizeLocal();
+        }
+    }
+
+    private void ResizeLocal()
+    {
+        float newSize = _mass / 10f;
+        transform.localScale = Vector3.one * newSize;
+        if (photonView.IsMine)
+            PlayerUI.OnMassChangedEvent?.Invoke((int)_mass);
     }
 
     private IEnumerator MassLossCoroutine()
@@ -81,7 +141,7 @@ public class PlayerMass : MonoBehaviour
             if (_mass > 35)
             {
                 _mass--;
-                Resize();
+                ResizeLocal();
             }
         }
     }

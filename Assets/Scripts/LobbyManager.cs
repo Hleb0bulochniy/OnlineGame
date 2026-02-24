@@ -2,12 +2,13 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 using TMPro;
+using Photon.Realtime;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
     public TextMeshProUGUI LogText;
 
-
+    private bool playRequested;
 
     void Start()
     {
@@ -22,31 +23,72 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void Log(string message)
     {
         Debug.Log(message);
-        LogText.text += "\n";
-        LogText.text += message;
+        if (LogText != null)
+            LogText.text += "\n" + message;
+    }
+
+    public void Play()
+    {
+        playRequested = true;
+        Log("Play pressed");
+
+        if (PhotonNetwork.IsConnectedAndReady)
+        {
+            TryJoinRandom();
+        }
+        else
+        {
+            Log("Not connected yet");
+            if (!PhotonNetwork.IsConnected)
+                PhotonNetwork.ConnectUsingSettings();
+        }
+    }
+
+    private void TryJoinRandom()
+    {
+        Log("Trying to join random room");
+        PhotonNetwork.JoinRandomRoom();
+    }
+
+    private void TryCreateRoom()
+    {
+        Log("No rooms available. Creating a new room");
+        var options = new RoomOptions
+        {
+            MaxPlayers = 10
+        };
+
+        PhotonNetwork.CreateRoom(null, options);
     }
 
     public override void OnConnectedToMaster()
     {
-        Log("Connected to master");
-        base.OnConnectedToMaster();
+        Log("Connected to Master");
+
+        if (playRequested)
+            TryJoinRandom();
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        Log($"JoinRandom failed ({returnCode}): {message}");
+        TryCreateRoom();
+    }
+
+    public override void OnCreatedRoom()
+    {
+        Log("Room created");
+    }
+
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+        Log($"CreateRoom failed ({returnCode}): {message}");
+        TryJoinRandom();
     }
 
     public override void OnJoinedRoom()
     {
-        Log("Joined the room");
-
+        Log("Joined the room. Loading Game scene...");
         PhotonNetwork.LoadLevel("Game");
-        base.OnJoinedRoom();
-    }
-
-    public void CreateRoom()
-    {
-        PhotonNetwork.CreateRoom(null, new Photon.Realtime.RoomOptions { MaxPlayers = 10 });
-    }
-
-    public void JoinRoom()
-    {
-        PhotonNetwork.JoinRandomRoom();
     }
 }
