@@ -2,6 +2,7 @@ using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class PlayerUI : MonoBehaviourPun
 {
@@ -34,6 +35,8 @@ public class PlayerUI : MonoBehaviourPun
     private void Start()
     {
         SetCanvasCamera();
+        //SetMouse();
+        //setLeaveButton();
         //_massText.text = "Масса: 10";
     }
 
@@ -59,4 +62,37 @@ public class PlayerUI : MonoBehaviourPun
     {
         _massText.text = $"Масса: {newMass}";
     }
+
+    //private void setLeaveButton()
+    //{
+    //    var canvas = GameObject.Find("Canvas");
+    //    if (canvas == null)
+    //    {
+    //        Debug.LogError("Canvas not found");
+    //        return;
+    //    }
+    //
+    //    var button = canvas.GetComponentInChildren<Button>(true);
+    //    if (button == null)
+    //    {
+    //        Debug.LogError("Button not found");
+    //        return;
+    //    }
+    //
+    //    Debug.Log($"Found button: {button.name}");
+    //
+    //    button.onClick.AddListener(Leave);
+    //    Debug.Log("Leave listener added");
+    //}
+    //
+    //public void Leave()
+    //{
+    //    PhotonNetwork.LeaveRoom();
+    //}
+    //
+    //public void SetMouse()
+    //{
+    //    Cursor.lockState = CursorLockMode.None;
+    //    Cursor.visible = true;
+    //}
 }

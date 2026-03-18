@@ -61,7 +61,7 @@ public class FoodSpawner : MonoBehaviour
 
     private IEnumerator RefillFoodCountCoroutine()
     {
-        Debug.Log("Стартует корутина пополнения еды");
+        //Debug.Log("Стартует корутина пополнения еды");
         while (_foodCount < _foodCountTarget)
         {
             yield return new WaitForSeconds(1);

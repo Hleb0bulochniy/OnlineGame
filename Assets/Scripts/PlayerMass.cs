@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Photon.Pun;
 using System.Collections;
 using UnityEngine;
@@ -16,6 +17,8 @@ public class PlayerMass : MonoBehaviourPun, IPunObservable
     [SerializeField] public UnityAction OnMassChangeAction;
 
     private bool _dead;
+
+    private Tween _scaleTween;
     public float Mass => _mass;
 
     void Start()
@@ -128,9 +131,16 @@ public class PlayerMass : MonoBehaviourPun, IPunObservable
     private void ResizeLocal()
     {
         float newSize = _mass / 10f;
-        transform.localScale = Vector3.one * newSize;
+        Vector3 targetScale = Vector3.one * newSize;
+
+        _scaleTween?.Kill();
+        _scaleTween = transform.DOScale(targetScale, 0.5f);
+
         if (photonView.IsMine)
+        {
+            OnMassChangeAction?.Invoke();
             PlayerUI.OnMassChangedEvent?.Invoke((int)_mass);
+        }
     }
 
     private IEnumerator MassLossCoroutine()

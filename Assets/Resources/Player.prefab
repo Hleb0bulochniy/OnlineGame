@@ -384,7 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mass: 10
-  _massLossSpeed: 500
+  _massLossSpeed: 200
 --- !u!135 &5047629163665279993
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -15,8 +15,6 @@ public class PlayerControllerPun : MonoBehaviourPun
     [Header("Look")]
     public float mouseSensitivity = 2f;
     public float maxPitch = 80f;
-
-    [Header("Misc")]
     public bool lockCursor = true;
 
     private Rigidbody rb;
@@ -29,7 +27,6 @@ public class PlayerControllerPun : MonoBehaviourPun
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
-        // ����� �� �����������
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationY;
     }
 
@@ -47,7 +44,6 @@ public class PlayerControllerPun : MonoBehaviourPun
         }
         else
         {
-            // ��� ����� ������� ��������� ������ � ����
             EnableLocalStuff(false);
         }
     }
@@ -128,6 +124,7 @@ public class PlayerControllerPun : MonoBehaviourPun
 
     private void ChangeSpeed()
     {
-        walkSpeed = 7f + (transform.localScale.x * walkSpeed) / 10f;
+        walkSpeed = 7f - (transform.localScale.x * walkSpeed) / 10f;
+        Debug.Log("скорость: " + walkSpeed);
     }
 }
